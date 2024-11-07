@@ -1,162 +1,176 @@
-  
-   alert("More Functions Will COming soon...");
-    let htmlEditor = CodeMirror.fromTextArea(document.getElementById("html"), {
-      mode: "xml",
-      theme: "lesser-dark",
-      lineNumbers: true
-    });
-
-    let cssEditor = CodeMirror.fromTextArea(document.getElementById("css"), {
-      mode: "css",
-      theme: "lesser-dark",
-      lineNumbers: true
-    });
-
-    let jsEditor = CodeMirror.fromTextArea(document.getElementById("js"), {
-      mode: "javascript",
-      theme: "lesser-dark",
-      lineNumbers: true
-    });
-
-    let pythonEditor = CodeMirror.fromTextArea(document.getElementById("python"), {
-      mode: "python",
-      theme: "lesser-dark",
-      lineNumbers: true
-    });
-
-    function showEditor(editor) {
-      htmlEditor.getWrapperElement().classList.add('hidden');
-      cssEditor.getWrapperElement().classList.add('hidden');
-      jsEditor.getWrapperElement().classList.add('hidden');
-      pythonEditor.getWrapperElement().classList.add('hidden');
-
-      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-
-      if (editor === 'html') {
-        htmlEditor.getWrapperElement().classList.remove('hidden');
-        document.getElementById('output-container').style.display = 'block';
-        document.getElementById('python-output-container').style.display = 'none';
-        htmlEditor.refresh();
-      } else if (editor === 'css') {
-        cssEditor.getWrapperElement().classList.remove('hidden');
-        cssEditor.refresh();
-      } else if (editor === 'js') {
-        jsEditor.getWrapperElement().classList.remove('hidden');
-        jsEditor.refresh();
-      } else if (editor === 'python') {
-        pythonEditor.getWrapperElement().classList.remove('hidden');
-        document.getElementById('output-container').style.display = 'none';
-        document.getElementById('python-output-container').style.display = 'block';
-        pythonEditor.refresh();
-      }
-
-      document.querySelector(`.tab[onclick="showEditor('${editor}')"]`).classList.add('active');
-    }
-
-    function showMoreLanguages() {
-      alert("More languages coming soon!");
-    }
-
-    function runCode() {
-      const html = htmlEditor.getValue();
-      const css = `<style>${cssEditor.getValue()}</style>`;
-      const js = `<script>${jsEditor.getValue()}<\/script>`;
-      const outputFrame = document.getElementById('output');
-
-      const outputDocument = outputFrame.contentDocument || outputFrame.contentWindow.document;
-      outputDocument.open();
-      outputDocument.write(html + css + js);
-      outputDocument.close();
-
-      // Run Python code if in the Python tab
-      if (document.querySelector('.tab.active').textContent.trim() === "Python") {
-        const pythonCode = pythonEditor.getValue();
-        const pythonOutput = document.getElementById('python-output');
-
-        // Clear previous output
-        pythonOutput.innerHTML = ''; 
-        // Override the print function to display output in the output area
-        const script = document.createElement('script');
-        script.textContent = `
-          window.print = function(...args) {
-            const output = args.join(" ") + "\\n";
-            document.getElementById('python-output').innerHTML += output;
-          };
-          exec(${JSON.stringify(pythonCode)});
-        `;
-        outputDocument.body.appendChild(script);
-      }
-    }
-
-
- function downloadFiles() {
-    const zip = new JSZip();
-
-    // Get values from CodeMirror editors
-    const htmlContent = htmlEditor.getValue();
-    const cssContent = cssEditor.getValue();
-    const jsContent = jsEditor.getValue();
-    const pythonContent = pythonEditor.getValue();
-
-    // Add files to the ZIP
-    zip.file("index.html", htmlContent);
-    zip.file("styles.css", cssContent);
-    zip.file("script.js", jsContent);
-    zip.file("script.py", pythonContent);
-
-    // Generate and download the ZIP file
-    zip.generateAsync({ type: "blob" }).then(function (content) {
-      saveAs(content, "code_files.zip");
-    });
+// Initialize CodeMirror editors
+let htmlEditor = CodeMirror.fromTextArea(
+  document.getElementById("html"),
+  {
+    mode: "xml",
+    theme: "lesser-dark",
+    lineNumbers: true
   }
-    // Prevent page refresh and warn users about unsaved changes
-    window.addEventListener('beforeunload', function (event) {
-      event.preventDefault();
-      event.returnValue = 'You have unsaved changes. Do you really want to leave?';
-    });
-  document.addEventListener('keydown', function (event) {
-    if (event.key === 'q' && event.ctrlKey) {
-      event.preventDefault(); // Prevent the default action (if any)
-      openOutputInNewPage();
+);
+
+let cssEditor = CodeMirror.fromTextArea(
+  document.getElementById("css"),
+  {
+    mode: "css",
+    theme: "lesser-dark",
+    lineNumbers: true
+  }
+);
+
+let jsEditor = CodeMirror.fromTextArea(
+  document.getElementById("js"),
+  {
+    mode: "javascript",
+    theme: "lesser-dark",
+    lineNumbers: true
+  }
+);
+
+let pythonEditor = CodeMirror.fromTextArea(
+  document.getElementById("python"),
+  {
+    mode: "python",
+    theme: "lesser-dark",
+    lineNumbers: true
+  }
+);
+
+// Show selected editor and hide others
+function showEditor(editor) {
+  // Hide all editors
+  document.querySelectorAll('.CodeMirror')
+    .forEach(el => el.classList.add('hidden'));
+
+  // Remove active class from all tabs
+  document.querySelectorAll('.tab')
+    .forEach(tab => tab.classList.remove('active'));
+
+  // Add active class to selected tab
+  document.querySelector(`.tab[onclick="showEditor('${editor}')"]`)
+    .classList.add('active');
+
+  // Show the selected editor
+  if (editor === 'html') {
+    htmlEditor.getWrapperElement().classList.remove('hidden');
+  } else if (editor === 'css') {
+    cssEditor.getWrapperElement().classList.remove('hidden');
+  } else if (editor === 'js') {
+    jsEditor.getWrapperElement().classList.remove('hidden');
+  } else if (editor === 'python') {
+    pythonEditor.getWrapperElement().classList.remove('hidden');
+  }
+}
+
+// Load content from a file into the appropriate editor
+function loadFile() {
+  const fileInput = document.getElementById("fileInput");
+  const file = fileInput.files[0];
+
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = function(e) {
+    const content = e.target.result;
+    const extension = file.name.split('.').pop().toLowerCase();
+
+    // Load file content based on extension
+    if (extension === 'html') {
+      htmlEditor.setValue(content);
+    } else if (extension === 'css') {
+      cssEditor.setValue(content);
+    } else if (extension === 'js') {
+      jsEditor.setValue(content);
+    } else if (extension === 'py') {
+      pythonEditor.setValue(content);
     }
+  };
+
+  reader.readAsText(file);
+}
+
+// Run the code in the editors and display the output
+function runCode() {
+  const html = htmlEditor.getValue();
+  const css = `<style>${cssEditor.getValue()}</style>`;
+  const js = `<script>${jsEditor.getValue()}<\/script>`;
+
+  const outputFrame = document.getElementById('output');
+  const outputDocument = outputFrame.contentDocument || outputFrame.contentWindow.document;
+
+  outputDocument.open();
+  outputDocument.write(html + css + js);
+  outputDocument.close();
+
+  // Run Python code using Brython and Pyodide
+  const pythonCode = pythonEditor.getValue();
+  document.getElementById('python-output').innerText = "Running Python...";
+
+  try {
+    brython({ debug: 1, ipython: 1 });
+    pyodide.runPython(pythonCode);
+  } catch (e) {
+    document.getElementById('python-output').innerText = `Error: ${e}`;
+  }
+}
+
+// Save the code files into a zip and allow the user to download it
+function saveFiles() {
+  const files = {
+    "index.html": htmlEditor.getValue(),
+    "style.css": cssEditor.getValue(),
+    "script.js": jsEditor.getValue(),
+    "script.py": pythonEditor.getValue()
+  };
+
+  const zip = new JSZip();
+
+  // Add files to the zip
+  for (let filename in files) {
+    zip.file(filename, files[filename]);
+  }
+
+  // Generate and download the zip file
+  zip.generateAsync({ type: "blob" }).then(function(content) {
+    saveAs(content, "project.zip");
   });
-
-  function openOutputInNewPage() {
-    const html = htmlEditor.getValue();
-    const css = cssEditor.getValue();
-    const js = jsEditor.getValue();
-    
-    const newWindow = window.open(); // Open a new window
-    newWindow.document.open();
-    newWindow.document.write(`
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <title>Output</title>
-        <style>${css}</style>
-      </head>
-      <body>
-        ${html}
-        <script>${js}<\/script>
-      </body>
-      </html>
-    `);
-    newWindow.document.close();
-  }
-document.addEventListener('keydown', (event) => {
+}
+document.addEventListener('keydown', function(event) {
+  // Prevent default action for Ctrl+F (to avoid opening browser search)
   if (event.ctrlKey && event.key === 'f') {
-    event.preventDefault(); // Prevent the default find behavior of Ctrl+F
+    event.preventDefault();
     toggleFullScreen();
+  }
+
+  // Show Output in Another Page (Ctrl+Q)
+  if (event.ctrlKey && event.key === 'q') {
+    openOutputInNewPage();
   }
 });
 
 function toggleFullScreen() {
-  if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen();
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
   } else {
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
-    }
+    document.documentElement.requestFullscreen(); // Request full-screen on the whole document
   }
+}
+
+function openOutputInNewPage() {
+  const html = htmlEditor.getValue();
+  const css = `<style>${cssEditor.getValue()}</style>`;
+  const js = `<script>${jsEditor.getValue()}<\/script>`;
+  const pythonCode = pythonEditor.getValue();
+
+  const newWindow = window.open('', '', 'width=800,height=600');
+  newWindow.document.write('<html><head><title>Output</title></head><body>');
+
+  if (document.querySelector('.tab.active').textContent.trim() !== "Python") {
+    newWindow.document.write(html + css + js);
+  } else {
+    newWindow.document.write('<pre>' + pythonCode + '</pre>'); // Show Python code (adjust with Brython if needed)
+  }
+
+  newWindow.document.write('</body></html>');
+  newWindow.document.close();
 }
