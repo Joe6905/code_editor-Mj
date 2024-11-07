@@ -1,4 +1,5 @@
-  let htmlEditor = CodeMirror.fromTextArea(document.getElementById("html"), { mode: "xml", theme: "lesser-dark", lineNumbers: true });
+
+    let htmlEditor = CodeMirror.fromTextArea(document.getElementById("html"), { mode: "xml", theme: "lesser-dark", lineNumbers: true });
     let cssEditor = CodeMirror.fromTextArea(document.getElementById("css"), { mode: "css", theme: "lesser-dark", lineNumbers: true });
     let jsEditor = CodeMirror.fromTextArea(document.getElementById("js"), { mode: "javascript", theme: "lesser-dark", lineNumbers: true });
     let pythonEditor = CodeMirror.fromTextArea(document.getElementById("python"), { mode: "python", theme: "lesser-dark", lineNumbers: true });
@@ -114,3 +115,5 @@ function openOutputInNewPage() {
   newWindow.document.write('</body></html>');
   newWindow.document.close();
 }
+
+
