@@ -2,10 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>poda</title>
-  <!-- Link to external CSS file -->
-
-  <!-- External JS libraries -->
+  <title>poda </title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/lesser-dark.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
@@ -17,9 +14,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/brython@3.8.9/brython.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/brython@3.8.9/brython_stdlib.js"></script>
-  <script src="script.js"></script> <!-- Link to external JavaScript file -->
+  <link rel="stylesheet" href="styles.css">
+
 </head>
-    <link rel="stylesheet" href="styles.css">
 <body onload="brython(); showEditor('html');">
   <div class="tabs">
     <div class="tab active" onclick="showEditor('html')">HTML</div>
@@ -38,6 +35,8 @@
     </div>
   </div>
 
+
+
   <div class="editor-output-container">
     <div class="code-editor">
       <textarea id="html" placeholder="Write HTML here..."></textarea>
@@ -53,6 +52,7 @@
   <div class="python-output-container" id="python-output-container">
     <pre id="python-output"></pre>
   </div>
-
+  <script src="script.js"></script> <!-- Link to external JavaScript file -->
+    
 </body>
 </html>
