@@ -14,8 +14,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/brython@3.8.9/brython.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/brython@3.8.9/brython_stdlib.js"></script>
-  <link rel="stylesheet" href="styles.css">
-
 </head>
 <body onload="brython(); showEditor('html');">
   <div class="tabs">
@@ -52,7 +50,237 @@
   <div class="python-output-container" id="python-output-container">
     <pre id="python-output"></pre>
   </div>
-  <script src="script.js"></script> <!-- Link to external JavaScript file -->
+
+  <script>
+    let htmlEditor = CodeMirror.fromTextArea(document.getElementById("html"), { mode: "xml", theme: "lesser-dark", lineNumbers: true });
+    let cssEditor = CodeMirror.fromTextArea(document.getElementById("css"), { mode: "css", theme: "lesser-dark", lineNumbers: true });
+    let jsEditor = CodeMirror.fromTextArea(document.getElementById("js"), { mode: "javascript", theme: "lesser-dark", lineNumbers: true });
+    let pythonEditor = CodeMirror.fromTextArea(document.getElementById("python"), { mode: "python", theme: "lesser-dark", lineNumbers: true });
+
+    function showEditor(editor) {
+      document.querySelectorAll('.CodeMirror').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelector(`.tab[onclick="showEditor('${editor}')"]`).classList.add('active');
+      if (editor === 'html') htmlEditor.getWrapperElement().classList.remove('hidden');
+      else if (editor === 'css') cssEditor.getWrapperElement().classList.remove('hidden');
+      else if (editor === 'js') jsEditor.getWrapperElement().classList.remove('hidden');
+      else if (editor === 'python') pythonEditor.getWrapperElement().classList.remove('hidden');
+    }
+
+    function loadFile() {
+      const fileInput = document.getElementById("fileInput");
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = e.target.result;
+        const extension = file.name.split('.').pop().toLowerCase();
+
+        if (extension === 'html') htmlEditor.setValue(content);
+        else if (extension === 'css') cssEditor.setValue(content);
+        else if (extension === 'js') jsEditor.setValue(content);
+        else if (extension === 'py') pythonEditor.setValue(content);
+      };
+      reader.readAsText(file);
+    }
+
+    function runCode() {
+      const html = htmlEditor.getValue();
+      const css = `<style>${cssEditor.getValue()}</style>`;
+      const js = `<script>${jsEditor.getValue()}<\/script>`;
+      const outputFrame = document.getElementById('output');
+      const outputDocument = outputFrame.contentDocument || outputFrame.contentWindow.document;
+
+      outputDocument.open();
+      outputDocument.write(html + css + js);
+      outputDocument.close();
+
+      const pythonCode = pythonEditor.getValue();
+      document.getElementById('python-output').textContent = '';
+      if (pythonCode) {
+        document.getElementById('python-output-container').style.display = 'block';
+        window.print = function(...args) {
+          document.getElementById('python-output').textContent += args.join(' ') + "\n";
+        };
+        eval(`brython()`);  // Reinitialize Brython runtime
+        exec(pythonCode);
+      }
+    }
+
+    htmlEditor.on("change", runCode);
+    cssEditor.on("change", runCode);
+    jsEditor.on("change", runCode);
+    pythonEditor.on("change", runCode);
+
+    function saveFiles() {
+      const zip = new JSZip();
+      const htmlContent = htmlEditor.getValue();
+      const cssContent = cssEditor.getValue();
+      const jsContent = jsEditor.getValue();
+      const pythonContent = pythonEditor.getValue();
+
+      if (htmlContent) zip.file("index.html", htmlContent);
+      if (cssContent) zip.file("styles.css", cssContent);
+      if (jsContent) zip.file("script.js", jsContent);
+      if (pythonContent) zip.file("script.py", pythonContent);
+
+      zip.generateAsync({ type: "blob" }).then(content => {
+        saveAs(content, "code_files.zip");
+      });
+    }
+document.addEventListener('keydown', function(event) {
+  // Prevent default action for Ctrl+F (to avoid opening browser search)
+  if (event.ctrlKey && event.key === 'f') {
+    event.preventDefault();
+    toggleFullScreen();
+  }
+
+  // Show Output in Another Page (Ctrl+Q)
+  if (event.ctrlKey && event.key === 'q') {
+    openOutputInNewPage();
+  }
+});
+
+function toggleFullScreen() {
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+  } else {
+    document.documentElement.requestFullscreen(); // Request full-screen on the whole document
+  }
+}
+
+function openOutputInNewPage() {
+  const html = htmlEditor.getValue();
+  const css = `<style>${cssEditor.getValue()}</style>`;
+  const js = `<script>${jsEditor.getValue()}<\/script>`;
+  const pythonCode = pythonEditor.getValue();
+
+  const newWindow = window.open('', '', 'width=800,height=600');
+  newWindow.document.write('<html><head><title>Output</title></head><body>');
+
+  if (document.querySelector('.tab.active').textContent.trim() !== "Python") {
+    newWindow.document.write(html + css + js);
+  } else {
+    newWindow.document.write('<pre>' + pythonCode + '</pre>'); // Show Python code (adjust with Brython if needed)
+  }
+
+  newWindow.document.write('</body></html>');
+  newWindow.document.close();
+}
+
+
+  </script>
+
+  <style>
+    /* Main styling for editor layout */
+    body {
+      font-family: 'Courier New', monospace;
+      background-color: #282C34;
+      color: #61DAFB;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
     
+    .editor-output-container {
+      display: flex;
+      width: 100%;
+      height: calc(100vh - 50px); /* Subtract the height of the tabs */
+    }
+
+    .code-editor {
+      width: 50%;  /* Adjust width as needed */
+      height: 100%;
+      padding: 10px;
+      border-right: 2px solid #61DAFB;
+    }
+
+    .output-container {
+      width: 50%;  /* Adjust width as needed */
+      height: 100%;
+      padding: 10px;
+      background-color: #1E1E1E;
+      color: #D4D4D4;
+      border-left: 2px solid #61DAFB;
+      overflow: hidden;
+    }
+
+    #output {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* Styling for tabs and dropdown */
+    .tabs {
+      font-family: 'Courier New', monospace;
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .tab {
+      padding: 10px 20px;
+      border: 1px solid #61DAFB;
+      margin-right: 5px;
+      cursor: pointer;
+      background-color: #3C3F41;
+      color: white;
+    }
+    .tab.active {
+      background-color: #61DAFB;
+      color: black;
+    }
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    .dropbtn {
+      padding: 10px 20px;
+      border: 1px solid #61DAFB;
+      background-color: #3C3F41;
+      color: white;
+      cursor: pointer;
+    }
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: #3C3F41;
+      min-width: 160px;
+      z-index: 1;
+    }
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+    .dropdown-content .tab {
+      border: none;
+      margin: 0;
+      background-color: #3C3F41;
+    }
+
+    .hidden {
+      display: none;
+    }
+    
+    /* Save and file buttons styling */
+    .button-group {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+    }
+    .save-button, .file-button {
+      margin-left: 10px;
+      background-color: #61DAFB;
+      color: black;
+      padding: 10px 20px;
+      cursor: pointer;
+      border: none;
+    }
+    .file-button {
+      background-color: #3C3F41;
+    }
+  </style>
 </body>
 </html>
