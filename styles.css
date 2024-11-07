@@ -1,108 +1,107 @@
-/* Main styling for editor layout */
 body {
-  font-family: 'Courier New', monospace;
-  background-color: #282C34;
-  color: #61DAFB;
-  margin: 0;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
+      font-family: 'Courier New', monospace;
+      background-color: #282C34;
+      color: #61DAFB;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    
+    .editor-output-container {
+      display: flex;
+      width: 100%;
+      height: calc(100vh - 50px); /* Subtract the height of the tabs */
+    }
 
-.editor-output-container {
-  display: flex;
-  width: 100%;
-  height: calc(100vh - 50px); /* Subtract the height of the tabs */
-}
+    .code-editor {
+      width: 50%;  /* Adjust width as needed */
+      height: 100%;
+      padding: 10px;
+      border-right: 2px solid #61DAFB;
+    }
 
-.code-editor {
-  width: 50%;  /* Adjust width as needed */
-  height: 100%;
-  padding: 10px;
-  border-right: 2px solid #61DAFB;
-}
+    .output-container {
+      width: 50%;  /* Adjust width as needed */
+      height: 100%;
+      padding: 10px;
+      background-color: #1E1E1E;
+      color: #D4D4D4;
+      border-left: 2px solid #61DAFB;
+      overflow: hidden;
+    }
 
-.output-container {
-  width: 50%;  /* Adjust width as needed */
-  height: 100%;
-  padding: 10px;
-  background-color: #1E1E1E;
-  color: #D4D4D4;
-  border-left: 2px solid #61DAFB;
-  overflow: hidden;
-}
+    #output {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
 
-#output {
-  width: 100%;
-  height: 100%;
-  border: none;
-}
+    /* Styling for tabs and dropdown */
+    .tabs {
+      font-family: 'Courier New', monospace;
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .tab {
+      padding: 10px 20px;
+      border: 1px solid #61DAFB;
+      margin-right: 5px;
+      cursor: pointer;
+      background-color: #3C3F41;
+      color: white;
+    }
+    .tab.active {
+      background-color: #61DAFB;
+      color: black;
+    }
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    .dropbtn {
+      padding: 10px 20px;
+      border: 1px solid #61DAFB;
+      background-color: #3C3F41;
+      color: white;
+      cursor: pointer;
+    }
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: #3C3F41;
+      min-width: 160px;
+      z-index: 1;
+    }
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+    .dropdown-content .tab {
+      border: none;
+      margin: 0;
+      background-color: #3C3F41;
+    }
 
-/* Styling for tabs and dropdown */
-.tabs {
-  font-family: 'Courier New', monospace;
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-}
-.tab {
-  padding: 10px 20px;
-  border: 1px solid #61DAFB;
-  margin-right: 5px;
-  cursor: pointer;
-  background-color: #3C3F41;
-  color: white;
-}
-.tab.active {
-  background-color: #61DAFB;
-  color: black;
-}
-.dropdown {
-  position: relative;
-  display: inline-block;
-}
-.dropbtn {
-  padding: 10px 20px;
-  border: 1px solid #61DAFB;
-  background-color: #3C3F41;
-  color: white;
-  cursor: pointer;
-}
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #3C3F41;
-  min-width: 160px;
-  z-index: 1;
-}
-.dropdown:hover .dropdown-content {
-  display: block;
-}
-.dropdown-content .tab {
-  border: none;
-  margin: 0;
-  background-color: #3C3F41;
-}
-
-.hidden {
-  display: none;
-}
-
-/* Save and file buttons styling */
-.button-group {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-}
-.save-button, .file-button {
-  margin-left: 10px;
-  background-color: #61DAFB;
-  color: black;
-  padding: 10px 20px;
-  cursor: pointer;
-  border: none;
-}
-.file-button {
-  background-color: #3C3F41;
-}
+    .hidden {
+      display: none;
+    }
+    
+    /* Save and file buttons styling */
+    .button-group {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+    }
+    .save-button, .file-button {
+      margin-left: 10px;
+      background-color: #61DAFB;
+      color: black;
+      padding: 10px 20px;
+      cursor: pointer;
+      border: none;
+    }
+    .file-button {
+      background-color: #3C3F41;
+    }
