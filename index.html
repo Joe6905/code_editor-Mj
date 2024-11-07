@@ -2,52 +2,54 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Simple Code Compiler</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
-    <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/lesser-dark.min.css">
+  <title>poda</title>
+  <!-- Link to external CSS file -->
+  <link rel="stylesheet" href="style.css">
+  <!-- External JS libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/xml/xml.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/css/css.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/javascript/javascript.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/python/python.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/brython@3.8.9/brython.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/brython@3.8.9/brython_stdlib.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-
+  <script src="script.js"></script> <!-- Link to external JavaScript file -->
 </head>
-<body onload="brython()">
-
+<body onload="brython(); showEditor('html');">
   <div class="tabs">
     <div class="tab active" onclick="showEditor('html')">HTML</div>
     <div class="tab" onclick="showEditor('css')">CSS</div>
     <div class="tab" onclick="showEditor('js')">JavaScript</div>
     <div class="dropdown">
-      <div class="tab" onclick="showMoreLanguages()">More ▼</div>
+      <button class="dropbtn"><span class="emoji">&#128512;</span> More</button>
       <div class="dropdown-content">
         <div class="tab" onclick="showEditor('python')">Python</div>
       </div>
     </div>
-    <button class="tab" onclick="downloadFiles()">Download</button>
+    <div class="button-group">
+      <button class="tab save-button" onclick="saveFiles()">💾 Save</button>
+      <label for="fileInput" class="tab file-button">📂 Select File</label>
+      <input type="file" id="fileInput" onchange="loadFile()" style="display: none;">
+    </div>
   </div>
 
-  <div class="code-editor">
-    <textarea id="html" placeholder="Write HTML here..."></textarea>
-    <textarea id="css" class="hidden" placeholder="Write CSS here..."></textarea>
-    <textarea id="js" class="hidden" placeholder="Write JavaScript here..."></textarea>
-    <textarea id="python" class="hidden" placeholder="Write Python here..."></textarea>
+  <div class="editor-output-container">
+    <div class="code-editor">
+      <textarea id="html" placeholder="Write HTML here..."></textarea>
+      <textarea id="css" class="hidden" placeholder="Write CSS here..."></textarea>
+      <textarea id="js" class="hidden" placeholder="Write JavaScript here..."></textarea>
+      <textarea id="python" class="hidden" placeholder="Write Python here..."></textarea>
+    </div>
     <div class="output-container" id="output-container">
       <iframe id="output" name="outputFrame"></iframe>
     </div>
-    <div class="python-output-container" id="python-output-container">
-      <pre id="python-output"></pre>
-    </div>
   </div>
 
-  <button class="run-button" onclick="runCode()">Run</button>
+  <div class="python-output-container" id="python-output-container">
+    <pre id="python-output"></pre>
+  </div>
 
-<script src="script.js"></script>
 </body>
 </html>
