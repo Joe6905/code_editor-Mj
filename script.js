@@ -1,140 +1,80 @@
-// Initialize CodeMirror editors
-let htmlEditor = CodeMirror.fromTextArea(
-  document.getElementById("html"),
-  {
-    mode: "xml",
-    theme: "lesser-dark",
-    lineNumbers: true
-  }
-);
+  let htmlEditor = CodeMirror.fromTextArea(document.getElementById("html"), { mode: "xml", theme: "lesser-dark", lineNumbers: true });
+    let cssEditor = CodeMirror.fromTextArea(document.getElementById("css"), { mode: "css", theme: "lesser-dark", lineNumbers: true });
+    let jsEditor = CodeMirror.fromTextArea(document.getElementById("js"), { mode: "javascript", theme: "lesser-dark", lineNumbers: true });
+    let pythonEditor = CodeMirror.fromTextArea(document.getElementById("python"), { mode: "python", theme: "lesser-dark", lineNumbers: true });
 
-let cssEditor = CodeMirror.fromTextArea(
-  document.getElementById("css"),
-  {
-    mode: "css",
-    theme: "lesser-dark",
-    lineNumbers: true
-  }
-);
-
-let jsEditor = CodeMirror.fromTextArea(
-  document.getElementById("js"),
-  {
-    mode: "javascript",
-    theme: "lesser-dark",
-    lineNumbers: true
-  }
-);
-
-let pythonEditor = CodeMirror.fromTextArea(
-  document.getElementById("python"),
-  {
-    mode: "python",
-    theme: "lesser-dark",
-    lineNumbers: true
-  }
-);
-
-// Show selected editor and hide others
-function showEditor(editor) {
-  // Hide all editors
-  document.querySelectorAll('.CodeMirror')
-    .forEach(el => el.classList.add('hidden'));
-
-  // Remove active class from all tabs
-  document.querySelectorAll('.tab')
-    .forEach(tab => tab.classList.remove('active'));
-
-  // Add active class to selected tab
-  document.querySelector(`.tab[onclick="showEditor('${editor}')"]`)
-    .classList.add('active');
-
-  // Show the selected editor
-  if (editor === 'html') {
-    htmlEditor.getWrapperElement().classList.remove('hidden');
-  } else if (editor === 'css') {
-    cssEditor.getWrapperElement().classList.remove('hidden');
-  } else if (editor === 'js') {
-    jsEditor.getWrapperElement().classList.remove('hidden');
-  } else if (editor === 'python') {
-    pythonEditor.getWrapperElement().classList.remove('hidden');
-  }
-}
-
-// Load content from a file into the appropriate editor
-function loadFile() {
-  const fileInput = document.getElementById("fileInput");
-  const file = fileInput.files[0];
-
-  if (!file) return;
-
-  const reader = new FileReader();
-
-  reader.onload = function(e) {
-    const content = e.target.result;
-    const extension = file.name.split('.').pop().toLowerCase();
-
-    // Load file content based on extension
-    if (extension === 'html') {
-      htmlEditor.setValue(content);
-    } else if (extension === 'css') {
-      cssEditor.setValue(content);
-    } else if (extension === 'js') {
-      jsEditor.setValue(content);
-    } else if (extension === 'py') {
-      pythonEditor.setValue(content);
+    function showEditor(editor) {
+      document.querySelectorAll('.CodeMirror').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelector(`.tab[onclick="showEditor('${editor}')"]`).classList.add('active');
+      if (editor === 'html') htmlEditor.getWrapperElement().classList.remove('hidden');
+      else if (editor === 'css') cssEditor.getWrapperElement().classList.remove('hidden');
+      else if (editor === 'js') jsEditor.getWrapperElement().classList.remove('hidden');
+      else if (editor === 'python') pythonEditor.getWrapperElement().classList.remove('hidden');
     }
-  };
 
-  reader.readAsText(file);
-}
+    function loadFile() {
+      const fileInput = document.getElementById("fileInput");
+      const file = fileInput.files[0];
+      if (!file) return;
 
-// Run the code in the editors and display the output
-function runCode() {
-  const html = htmlEditor.getValue();
-  const css = `<style>${cssEditor.getValue()}</style>`;
-  const js = `<script>${jsEditor.getValue()}<\/script>`;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = e.target.result;
+        const extension = file.name.split('.').pop().toLowerCase();
 
-  const outputFrame = document.getElementById('output');
-  const outputDocument = outputFrame.contentDocument || outputFrame.contentWindow.document;
+        if (extension === 'html') htmlEditor.setValue(content);
+        else if (extension === 'css') cssEditor.setValue(content);
+        else if (extension === 'js') jsEditor.setValue(content);
+        else if (extension === 'py') pythonEditor.setValue(content);
+      };
+      reader.readAsText(file);
+    }
 
-  outputDocument.open();
-  outputDocument.write(html + css + js);
-  outputDocument.close();
+    function runCode() {
+      const html = htmlEditor.getValue();
+      const css = `<style>${cssEditor.getValue()}</style>`;
+      const js = `<script>${jsEditor.getValue()}<\/script>`;
+      const outputFrame = document.getElementById('output');
+      const outputDocument = outputFrame.contentDocument || outputFrame.contentWindow.document;
 
-  // Run Python code using Brython and Pyodide
-  const pythonCode = pythonEditor.getValue();
-  document.getElementById('python-output').innerText = "Running Python...";
+      outputDocument.open();
+      outputDocument.write(html + css + js);
+      outputDocument.close();
 
-  try {
-    brython({ debug: 1, ipython: 1 });
-    pyodide.runPython(pythonCode);
-  } catch (e) {
-    document.getElementById('python-output').innerText = `Error: ${e}`;
-  }
-}
+      const pythonCode = pythonEditor.getValue();
+      document.getElementById('python-output').textContent = '';
+      if (pythonCode) {
+        document.getElementById('python-output-container').style.display = 'block';
+        window.print = function(...args) {
+          document.getElementById('python-output').textContent += args.join(' ') + "\n";
+        };
+        eval(`brython()`);  // Reinitialize Brython runtime
+        exec(pythonCode);
+      }
+    }
 
-// Save the code files into a zip and allow the user to download it
-function saveFiles() {
-  const files = {
-    "index.html": htmlEditor.getValue(),
-    "style.css": cssEditor.getValue(),
-    "script.js": jsEditor.getValue(),
-    "script.py": pythonEditor.getValue()
-  };
+    htmlEditor.on("change", runCode);
+    cssEditor.on("change", runCode);
+    jsEditor.on("change", runCode);
+    pythonEditor.on("change", runCode);
 
-  const zip = new JSZip();
+    function saveFiles() {
+      const zip = new JSZip();
+      const htmlContent = htmlEditor.getValue();
+      const cssContent = cssEditor.getValue();
+      const jsContent = jsEditor.getValue();
+      const pythonContent = pythonEditor.getValue();
 
-  // Add files to the zip
-  for (let filename in files) {
-    zip.file(filename, files[filename]);
-  }
+      if (htmlContent) zip.file("index.html", htmlContent);
+      if (cssContent) zip.file("styles.css", cssContent);
+      if (jsContent) zip.file("script.js", jsContent);
+      if (pythonContent) zip.file("script.py", pythonContent);
 
-  // Generate and download the zip file
-  zip.generateAsync({ type: "blob" }).then(function(content) {
-    saveAs(content, "project.zip");
-  });
-}
+      zip.generateAsync({ type: "blob" }).then(content => {
+        saveAs(content, "code_files.zip");
+      });
+    }
 document.addEventListener('keydown', function(event) {
   // Prevent default action for Ctrl+F (to avoid opening browser search)
   if (event.ctrlKey && event.key === 'f') {
