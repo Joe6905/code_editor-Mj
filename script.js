@@ -1,119 +1,166 @@
+// ================= CodeMirror Setup =================
+let htmlEditor = CodeMirror.fromTextArea(document.getElementById("html"), {
+  mode: "xml",
+  theme: "lesser-dark",
+  lineNumbers: true
+});
 
-    let htmlEditor = CodeMirror.fromTextArea(document.getElementById("html"), { mode: "xml", theme: "lesser-dark", lineNumbers: true });
-    let cssEditor = CodeMirror.fromTextArea(document.getElementById("css"), { mode: "css", theme: "lesser-dark", lineNumbers: true });
-    let jsEditor = CodeMirror.fromTextArea(document.getElementById("js"), { mode: "javascript", theme: "lesser-dark", lineNumbers: true });
-    let pythonEditor = CodeMirror.fromTextArea(document.getElementById("python"), { mode: "python", theme: "lesser-dark", lineNumbers: true });
+let cssEditor = CodeMirror.fromTextArea(document.getElementById("css"), {
+  mode: "css",
+  theme: "lesser-dark",
+  lineNumbers: true
+});
 
-    function showEditor(editor) {
-      document.querySelectorAll('.CodeMirror').forEach(el => el.classList.add('hidden'));
-      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-      document.querySelector(`.tab[onclick="showEditor('${editor}')"]`).classList.add('active');
-      if (editor === 'html') htmlEditor.getWrapperElement().classList.remove('hidden');
-      else if (editor === 'css') cssEditor.getWrapperElement().classList.remove('hidden');
-      else if (editor === 'js') jsEditor.getWrapperElement().classList.remove('hidden');
-      else if (editor === 'python') pythonEditor.getWrapperElement().classList.remove('hidden');
-    }
+let jsEditor = CodeMirror.fromTextArea(document.getElementById("js"), {
+  mode: "javascript",
+  theme: "lesser-dark",
+  lineNumbers: true
+});
 
-    function loadFile() {
-      const fileInput = document.getElementById("fileInput");
-      const file = fileInput.files[0];
-      if (!file) return;
+let pythonEditor = CodeMirror.fromTextArea(document.getElementById("python"), {
+  mode: "python",
+  theme: "lesser-dark",
+  lineNumbers: true
+});
 
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const content = e.target.result;
-        const extension = file.name.split('.').pop().toLowerCase();
+// ================= Tab Switching =================
+function showEditor(editor) {
+  document.querySelectorAll('.CodeMirror').forEach(el => el.classList.add('hidden'));
+  document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+  document.querySelector(`.tab[onclick="showEditor('${editor}')"]`).classList.add('active');
 
-        if (extension === 'html') htmlEditor.setValue(content);
-        else if (extension === 'css') cssEditor.setValue(content);
-        else if (extension === 'js') jsEditor.setValue(content);
-        else if (extension === 'py') pythonEditor.setValue(content);
-      };
-      reader.readAsText(file);
-    }
+  if (editor === 'html') htmlEditor.getWrapperElement().classList.remove('hidden');
+  else if (editor === 'css') cssEditor.getWrapperElement().classList.remove('hidden');
+  else if (editor === 'js') jsEditor.getWrapperElement().classList.remove('hidden');
+  else if (editor === 'python') pythonEditor.getWrapperElement().classList.remove('hidden');
+}
 
-    function runCode() {
-      const html = htmlEditor.getValue();
-      const css = `<style>${cssEditor.getValue()}</style>`;
-      const js = `<script>${jsEditor.getValue()}<\/script>`;
-      const outputFrame = document.getElementById('output');
-      const outputDocument = outputFrame.contentDocument || outputFrame.contentWindow.document;
+// ================= Load File =================
+function loadFile() {
+  const file = document.getElementById("fileInput").files[0];
+  if (!file) return;
 
-      outputDocument.open();
-      outputDocument.write(html + css + js);
-      outputDocument.close();
+  const reader = new FileReader();
+  reader.onload = e => {
+    const content = e.target.result;
+    const ext = file.name.split('.').pop().toLowerCase();
 
-      const pythonCode = pythonEditor.getValue();
-      document.getElementById('python-output').textContent = '';
-      if (pythonCode) {
-        document.getElementById('python-output-container').style.display = 'block';
-        window.print = function(...args) {
-          document.getElementById('python-output').textContent += args.join(' ') + "\n";
-        };
-        eval(`brython()`);  // Reinitialize Brython runtime
-        exec(pythonCode);
-      }
-    }
+    if (ext === 'html') htmlEditor.setValue(content);
+    else if (ext === 'css') cssEditor.setValue(content);
+    else if (ext === 'js') jsEditor.setValue(content);
+    else if (ext === 'py') pythonEditor.setValue(content);
+  };
+  reader.readAsText(file);
+}
 
-    htmlEditor.on("change", runCode);
-    cssEditor.on("change", runCode);
-    jsEditor.on("change", runCode);
-    pythonEditor.on("change", runCode);
+// ================= Run Code =================
+function runCode() {
+  const html = htmlEditor.getValue();
+  const css = `<style>${cssEditor.getValue()}</style>`;
+  const js = `<script>${jsEditor.getValue()}<\/script>`;
 
-    function saveFiles() {
-      const zip = new JSZip();
-      const htmlContent = htmlEditor.getValue();
-      const cssContent = cssEditor.getValue();
-      const jsContent = jsEditor.getValue();
-      const pythonContent = pythonEditor.getValue();
+  const outputFrame = document.getElementById('output');
+  const doc = outputFrame.contentDocument || outputFrame.contentWindow.document;
 
-      if (htmlContent) zip.file("index.html", htmlContent);
-      if (cssContent) zip.file("styles.css", cssContent);
-      if (jsContent) zip.file("script.js", jsContent);
-      if (pythonContent) zip.file("script.py", pythonContent);
+  doc.open();
+  doc.write(html + css + js);
+  doc.close();
 
-      zip.generateAsync({ type: "blob" }).then(content => {
-        saveAs(content, "code_files.zip");
-      });
-    }
-document.addEventListener('keydown', function(event) {
-  // Prevent default action for Ctrl+F (to avoid opening browser search)
-  if (event.ctrlKey && event.key === 'f') {
-    event.preventDefault();
+  // Python (Brython)
+  const pythonCode = pythonEditor.getValue();
+  document.getElementById('python-output').textContent = '';
+
+  if (pythonCode) {
+    document.getElementById('python-output-container').style.display = 'block';
+
+    window.print = (...args) => {
+      document.getElementById('python-output').textContent += args.join(' ') + "\n";
+    };
+
+    brython();
+    exec(pythonCode);
+  }
+}
+
+// Auto run on change
+htmlEditor.on("change", runCode);
+cssEditor.on("change", runCode);
+jsEditor.on("change", runCode);
+pythonEditor.on("change", runCode);
+
+// ================= Save Files =================
+function saveFiles() {
+  const zip = new JSZip();
+
+  if (htmlEditor.getValue()) zip.file("index.html", htmlEditor.getValue());
+  if (cssEditor.getValue()) zip.file("styles.css", cssEditor.getValue());
+  if (jsEditor.getValue()) zip.file("script.js", jsEditor.getValue());
+  if (pythonEditor.getValue()) zip.file("script.py", pythonEditor.getValue());
+
+  zip.generateAsync({ type: "blob" }).then(content => {
+    saveAs(content, "code_files.zip");
+  });
+}
+
+// ================= Keyboard Shortcuts =================
+document.addEventListener('keydown', e => {
+  // Ctrl + F → Fullscreen page
+  if (e.ctrlKey && e.key === 'f') {
+    e.preventDefault();
     toggleFullScreen();
   }
 
-  // Show Output in Another Page (Ctrl+Q)
-  if (event.ctrlKey && event.key === 'q') {
+  // Ctrl + Q → Output in new page
+  if (e.ctrlKey && e.key === 'q') {
+    e.preventDefault();
     openOutputInNewPage();
+  }
+
+  // Ctrl + O → Fullscreen output only
+  if (e.ctrlKey && e.key === 'o') {
+    e.preventDefault();
+    fullscreenOutput();
   }
 });
 
+// ================= Fullscreen Page =================
 function toggleFullScreen() {
   if (document.fullscreenElement) {
     document.exitFullscreen();
   } else {
-    document.documentElement.requestFullscreen(); // Request full-screen on the whole document
+    document.documentElement.requestFullscreen();
   }
 }
 
+// ================= Fullscreen Output (Same Page) =================
+function fullscreenOutput() {
+  const outputFrame = document.getElementById('output');
+
+  if (!document.fullscreenElement) {
+    if (outputFrame.requestFullscreen) outputFrame.requestFullscreen();
+    else if (outputFrame.webkitRequestFullscreen) outputFrame.webkitRequestFullscreen();
+    else if (outputFrame.msRequestFullscreen) outputFrame.msRequestFullscreen();
+  } else {
+    document.exitFullscreen();
+  }
+}
+
+// ================= Output in New Page =================
 function openOutputInNewPage() {
   const html = htmlEditor.getValue();
   const css = `<style>${cssEditor.getValue()}</style>`;
   const js = `<script>${jsEditor.getValue()}<\/script>`;
   const pythonCode = pythonEditor.getValue();
 
-  const newWindow = window.open('', '', 'width=800,height=600');
-  newWindow.document.write('<html><head><title>Output</title></head><body>');
+  const win = window.open('', '', 'width=900,height=600');
+  win.document.write('<html><head><title>Output</title></head><body>');
 
   if (document.querySelector('.tab.active').textContent.trim() !== "Python") {
-    newWindow.document.write(html + css + js);
+    win.document.write(html + css + js);
   } else {
-    newWindow.document.write('<pre>' + pythonCode + '</pre>'); // Show Python code (adjust with Brython if needed)
+    win.document.write('<pre>' + pythonCode + '</pre>');
   }
 
-  newWindow.document.write('</body></html>');
-  newWindow.document.close();
+  win.document.write('</body></html>');
+  win.document.close();
 }
-
-
