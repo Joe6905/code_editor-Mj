@@ -9,6 +9,20 @@
       flex-direction: column;
       height: 100vh;
     }
+.output-controls {
+  text-align: center;
+  margin-top: 8px;
+}
+
+.output-controls button {
+  padding: 6px 14px;
+  background: #222;
+  color: #0f0;
+  border: 1px solid #0f0;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
     
     .editor-output-container {
       display: flex;
